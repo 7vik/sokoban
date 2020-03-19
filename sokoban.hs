@@ -56,8 +56,8 @@ drawTile Storage = storage
 drawTile Box     = box
 drawTile Blank   = blank
 
-maze :: Int -> Int -> Tile
-maze x y
+maze :: Location -> Tile
+maze (C x y)
     | abs x > 4  || abs y > 4  = Blank
     | abs x == 4 || abs y == 4 = Wall
     | x ==  2 && y <= 0        = Wall
@@ -72,5 +72,7 @@ pictureOfMazeRow :: Int -> Picture
 pictureOfMazeRow x = foldl (&) blank (map (pictureOfMazeRowCol x) [-10..10])
 
 pictureOfMazeRowCol :: Int -> Int -> Picture
-pictureOfMazeRowCol x y = translated (fromIntegral x) (fromIntegral y) (drawTile (maze x y))
+pictureOfMazeRowCol x y = translated (fromIntegral x) (fromIntegral y) (drawTile (maze (C x y)))
+
+-- player :: Picture
 
