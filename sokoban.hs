@@ -4,9 +4,37 @@
 import CodeWorld        -- cabal install codeworld-api
 
 main :: IO ()
-main = drawingOf pictureOfMaze
+main = activityOf initialLocation handleEvent drawState
+
+handleEvent :: Event -> Location -> Location
+handleEvent (KeyPress key) c
+    | key == "Right" = adjacentLocation R c
+    | key == "Up"    = adjacentLocation U c
+    | key == "Left"  = adjacentLocation L c
+    | key == "Down"  = adjacentLocation D c
+handleEvent _ c      = c
+
+drawState :: Location -> Picture
+drawState c = atLocation c pictureOfMaze
 
 data Tile = Wall | Ground | Storage | Box | Blank
+data Direction = R | U | L | D
+data Location = C Int Int
+
+initialLocation :: Location
+initialLocation = C 0 0
+
+atLocation :: Location -> Picture -> Picture
+atLocation (C x y) pic = translated (fromIntegral x) (fromIntegral y) pic
+
+adjacentLocation :: Direction -> Location -> Location
+adjacentLocation R (C x y) = C  (x+1)   y
+adjacentLocation U (C x y) = C  x       (y+1)
+adjacentLocation L (C x y) = C  (x-1)   y
+adjacentLocation D (C x y) = C  x       (y-1)
+
+someLocation :: Location
+someLocation = adjacentLocation U (adjacentLocation U (adjacentLocation L initialLocation))
 
 -- different squares that may occur in Sokoban
 wall :: Picture
@@ -45,3 +73,4 @@ pictureOfMazeRow x = foldl (&) blank (map (pictureOfMazeRowCol x) [-10..10])
 
 pictureOfMazeRowCol :: Int -> Int -> Picture
 pictureOfMazeRowCol x y = translated (fromIntegral x) (fromIntegral y) (drawTile (maze x y))
+
