@@ -4,7 +4,7 @@
 import CodeWorld        -- cabal install codeworld-api
 
 main :: IO ()
-main = activityOf initialLocation handleEvent drawState
+main = activityOf safeLocation handleEvent drawState
 
 handleEvent :: Event -> Location -> Location
 handleEvent (KeyPress key) c
@@ -15,23 +15,39 @@ handleEvent (KeyPress key) c
 handleEvent _ c      = c
 
 drawState :: Location -> Picture
-drawState c = atLocation c pictureOfMaze
+drawState c =  (atLocation c player) & pictureOfMaze
 
-data Tile = Wall | Ground | Storage | Box | Blank
+data Tile = Wall | Ground | Storage | Box | Blank deriving Eq
 data Direction = R | U | L | D
 data Location = C Int Int
 
 initialLocation :: Location
 initialLocation = C 0 0
 
+-- hard-code this with a change in level (think about automating this)
+safeLocation :: Location
+safeLocation = C 0 1
+
 atLocation :: Location -> Picture -> Picture
 atLocation (C x y) pic = translated (fromIntegral x) (fromIntegral y) pic
 
 adjacentLocation :: Direction -> Location -> Location
-adjacentLocation R (C x y) = C  (x+1)   y
-adjacentLocation U (C x y) = C  x       (y+1)
-adjacentLocation L (C x y) = C  (x-1)   y
-adjacentLocation D (C x y) = C  x       (y-1)
+adjacentLocation R (C x y)
+    | ((maze (C  (x+1)   y)) == Ground)  =  (C  (x+1)   y) 
+    | (maze (C  (x+1)   y)) == Storage =  C  (x+1)   y 
+    | otherwise = (C x y)
+adjacentLocation U (C x y)
+    | (maze (C  (x)   (y+1))) == Ground  =  C  (x)   (y+1) 
+    | (maze (C  (x)   (y+1))) == Storage =  C  (x)   (y+1) 
+    | otherwise = (C x y)
+adjacentLocation L (C x y)
+    | (maze (C  (x-1)   y)) == Ground  =  C  (x-1)   y 
+    | (maze (C  (x-1)   y)) == Storage =  C  (x-1)   y 
+    | otherwise = (C x y)
+adjacentLocation D (C x y) 
+    | (maze (C  (x)   (y-1))) == Ground  =  C  (x)   (y-1) 
+    | (maze (C  (x)   (y-1))) == Storage =  C  (x)   (y-1) 
+    | otherwise = (C x y)
 
 someLocation :: Location
 someLocation = adjacentLocation U (adjacentLocation U (adjacentLocation L initialLocation))
@@ -74,5 +90,7 @@ pictureOfMazeRow x = foldl (&) blank (map (pictureOfMazeRowCol x) [-10..10])
 pictureOfMazeRowCol :: Int -> Int -> Picture
 pictureOfMazeRowCol x y = translated (fromIntegral x) (fromIntegral y) (drawTile (maze (C x y)))
 
--- player :: Picture
+-- make player fancier later
+player :: Picture
+player = (colored green (translated 0 0.3 (solidRectangle 0.1 0.3))) & (colored pink (solidCircle 0.3))
 
