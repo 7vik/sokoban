@@ -4,7 +4,24 @@
 import CodeWorld        -- cabal install codeworld-api
 
 main :: IO ()
-main = resetableActivityOf startState handleEvent drawState
+main = startScreenActivityOf startState handleEvent drawState
+
+startScreenActivityOf :: world -> (Event -> world -> world) -> (world -> Picture) -> IO ()
+startScreenActivityOf state0 handle draw
+  = activityOf state0' handle' draw'
+  where
+    state0' = StartScreen
+    handle' (KeyPress key) StartScreen
+        | key == " "                  = Running state0
+    handle' _              StartScreen = StartScreen
+    handle' e              (Running s) = Running (handle e s)
+    draw' StartScreen = startScreen
+    draw' (Running s) = draw s
+
+data StartScreenState world = StartScreen | Running world
+
+startScreen :: Picture
+startScreen = scaled 3 3 (lettering "Sokoban!")
 
 resetableActivityOf :: world -> (Event -> world -> world) -> (world -> Picture) -> IO ()
 resetableActivityOf = activityOf
