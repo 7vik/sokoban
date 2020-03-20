@@ -28,7 +28,11 @@ data State = Join Location Direction
 
 -- hard-code this with a change in level (think about automating this)
 startState :: State
-startState = Join (C 0 1) U
+-- startState = Join (C 0 1) U  -- level 1
+startState = Join (C 3 4) D  -- level 2
+
+maze :: Location -> Tile
+maze = mazeL2
 
 atLocation :: Location -> Picture -> Picture
 atLocation (C x y) pic = translated (fromIntegral x) (fromIntegral y) pic
@@ -71,14 +75,93 @@ drawTile Storage = storage
 drawTile Box     = box
 drawTile Blank   = blank
 
-maze :: Location -> Tile
-maze (C x y)
+
+mazeL1 :: Location -> Tile                  -- level 1
+mazeL1 (C x y)
     | abs x > 4  || abs y > 4  = Blank
     | abs x == 4 || abs y == 4 = Wall
     | x ==  2 && y <= 0        = Wall
     | x ==  3 && y <= 0        = Storage
     | x >= -2 && y == 0        = Box
     | otherwise                = Ground
+
+mazeL2 :: Location -> Tile                  -- level 2
+mazeL2 (C (-5) (1)) = Wall
+mazeL2 (C (-5) (2)) = Wall
+mazeL2 (C (-5) (3)) = Wall
+mazeL2 (C (-5) (4)) = Wall
+
+mazeL2 (C (-4) (-5)) = Wall
+mazeL2 (C (-4) (-4)) = Wall
+mazeL2 (C (-4) (-3)) = Wall
+mazeL2 (C (-4) (-2)) = Wall
+mazeL2 (C (-4) (-1)) = Wall
+mazeL2 (C (-4) (0)) = Wall
+mazeL2 (C (-4) (1)) = Wall
+mazeL2 (C (-4) (4)) = Wall
+
+mazeL2 (C (-3) (1)) = Box
+mazeL2 (C (-3) (-3)) = Box
+mazeL2 (C (-3) (4)) = Wall
+mazeL2 (C (-3) (-5)) = Wall
+
+mazeL2 (C (-2) (0)) = Box
+mazeL2 (C (-2) (-1)) = Wall
+mazeL2 (C (-2) (1)) = Wall
+mazeL2 (C (-2) (4)) = Wall
+mazeL2 (C (-2) (-5)) = Wall
+
+mazeL2 (C (-1) 0) = Storage
+mazeL2 (C (-1) 1) = Storage
+mazeL2 (C (-1) (-1)) = Storage
+mazeL2 (C (-1) (2)) = Box
+mazeL2 (C (-1) (4)) = Wall
+mazeL2 (C (-1) (-5)) = Wall
+mazeL2 (C (-1) (-4)) = Wall
+
+mazeL2 (C 0 0) = Storage
+mazeL2 (C 0 1) = Storage
+mazeL2 (C (0) (-3)) = Box
+mazeL2 (C (0) (2)) = Wall
+mazeL2 (C (0) (-2)) = Wall
+mazeL2 (C (0) (4)) = Wall
+mazeL2 (C (0) (-4)) = Wall
+
+mazeL2 (C 1  0) = Storage
+mazeL2 (C 1  1) = Storage
+mazeL2 (C (1) (5)) = Wall
+mazeL2 (C 1 (-1)) = Storage
+mazeL2 (C (1) (4)) = Wall
+mazeL2 (C (1) (3)) = Box
+mazeL2 (C (1) (-4)) = Wall
+mazeL2 (C (1) (2)) = Wall
+
+mazeL2 (C (2) (-1)) = Wall
+mazeL2 (C (2) (-2)) = Wall
+mazeL2 (C (2) (1)) = Wall
+mazeL2 (C (2) (5)) = Wall
+mazeL2 (C (2) (-4)) = Wall
+
+mazeL2 (C (3) (2)) = Box
+mazeL2 (C (3) (-2)) = Box
+mazeL2 (C (3) (5)) = Wall
+mazeL2 (C (3) (-4)) = Wall
+
+mazeL2 (C (4) (-4)) = Wall
+mazeL2 (C (4) (-1)) = Wall
+mazeL2 (C (4) (0)) = Wall
+mazeL2 (C (4) (1)) = Wall
+mazeL2 (C (4) (2)) = Wall
+mazeL2 (C (4) (3)) = Wall
+mazeL2 (C (4) (5)) = Wall
+mazeL2 (C (4) (4)) = Wall
+
+mazeL2 (C (5) (-1)) = Wall
+mazeL2 (C (5) (-2)) = Wall
+mazeL2 (C (5) (-3)) = Wall
+mazeL2 (C (5) (-4)) = Wall
+
+mazeL2 (C (_) (_)) = Ground
 
 pictureOfMaze :: Picture
 pictureOfMaze = foldl (&) blank (map pictureOfMazeRow [-10..10])
