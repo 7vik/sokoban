@@ -3,22 +3,41 @@
 
 import CodeWorld        -- cabal install codeworld-api
 
-main :: IO ()
-main = startScreenActivityOf startState handleEvent drawState
-
-startScreenActivityOf :: world -> (Event -> world -> world) -> (world -> Picture) -> IO ()
-startScreenActivityOf state0 handle draw
-  = activityOf state0' handle' draw'
-  where
-    state0' = StartScreen
-    handle' (KeyPress key) StartScreen
-        | key == " "                  = Running state0
-    handle' _              StartScreen = StartScreen
-    handle' e              (Running s) = Running (handle e s)
-    draw' StartScreen = startScreen
-    draw' (Running s) = draw s
-
+data Activity world = Activity world (Event -> world -> world) (world -> Picture)
 data StartScreenState world = StartScreen | Running world
+data Tile = Wall | Ground | Storage | Box | Blank deriving Eq
+data Direction = R | U | L | D
+data Location = C Int Int
+data State = Join Location Direction
+
+main :: IO ()
+-- main = startScreenActivityOf startState handleEvent drawState
+main = runActivity (resetable (withStartScreen exercise2))
+
+runActivity :: Activity s -> IO ()
+runActivity (Activity state0 handle draw) = activityOf state0 handle draw
+
+exercise2 :: Activity State
+exercise2 = Activity startState handleEvent drawState
+
+resetable :: Activity s -> Activity s
+resetable (Activity state0 handle draw) = Activity state0 handle' draw 
+    where 
+        handle' (KeyPress key) _ | key == "M" = state0
+        handle' e s = handle e s
+
+withStartScreen :: Activity s -> Activity (StartScreenState s)
+withStartScreen (Activity state0 handle draw) = Activity state0' handle' draw'
+    where
+        state0' = StartScreen
+        handle' (KeyPress key) StartScreen
+             | key == " "                  = Running state0
+        handle' _              StartScreen = StartScreen
+        handle' e              (Running s) = Running (handle e s)
+
+        draw' StartScreen = startScreen
+        draw' (Running s) = draw s
+
 
 startScreen :: Picture
 startScreen = scaled 3 3 (lettering "Sokoban!")
@@ -38,10 +57,6 @@ handleEvent _ c      = c
 drawState :: State -> Picture
 drawState (Join l d) =  (atLocation l (directedPlayer d)) & pictureOfMaze
 
-data Tile = Wall | Ground | Storage | Box | Blank deriving Eq
-data Direction = R | U | L | D
-data Location = C Int Int
-data State = Join Location Direction
 
 -- hard-code this with a change in level (think about automating this)
 startState :: State
