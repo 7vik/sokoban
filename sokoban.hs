@@ -4,7 +4,10 @@
 import CodeWorld        -- cabal install codeworld-api
 
 main :: IO ()
-main = activityOf startState handleEvent drawState
+main = resetableActivityOf startState handleEvent drawState
+
+resetableActivityOf :: world -> (Event -> world -> world) -> (world -> Picture) -> IO ()
+resetableActivityOf = activityOf
 
 handleEvent :: Event -> State -> State
 handleEvent (KeyPress key) c
@@ -12,6 +15,7 @@ handleEvent (KeyPress key) c
     | key == "Up"    = adjacentLocation U c
     | key == "Left"  = adjacentLocation L c
     | key == "Down"  = adjacentLocation D c
+    | key == "R"   = startState            -- reset the game
 handleEvent _ c      = c
 
 drawState :: State -> Picture
