@@ -4,9 +4,9 @@
 import CodeWorld        -- cabal install codeworld-api
 
 main :: IO ()
-main = activityOf safeLocation handleEvent drawState
+main = activityOf startState handleEvent drawState
 
-handleEvent :: Event -> Location -> Location
+handleEvent :: Event -> State -> State
 handleEvent (KeyPress key) c
     | key == "Right" = adjacentLocation R c
     | key == "Up"    = adjacentLocation U c
@@ -14,43 +14,38 @@ handleEvent (KeyPress key) c
     | key == "Down"  = adjacentLocation D c
 handleEvent _ c      = c
 
-drawState :: Location -> Picture
-drawState c =  (atLocation c player) & pictureOfMaze
+drawState :: State -> Picture
+drawState (Join l d) =  (atLocation l (directedPlayer d)) & pictureOfMaze
 
 data Tile = Wall | Ground | Storage | Box | Blank deriving Eq
 data Direction = R | U | L | D
 data Location = C Int Int
-
-initialLocation :: Location
-initialLocation = C 0 0
+data State = Join Location Direction
 
 -- hard-code this with a change in level (think about automating this)
-safeLocation :: Location
-safeLocation = C 0 1
+startState :: State
+startState = Join (C 0 1) U
 
 atLocation :: Location -> Picture -> Picture
 atLocation (C x y) pic = translated (fromIntegral x) (fromIntegral y) pic
 
-adjacentLocation :: Direction -> Location -> Location
-adjacentLocation R (C x y)
-    | ((maze (C  (x+1)   y)) == Ground)  =  (C  (x+1)   y) 
-    | (maze (C  (x+1)   y)) == Storage =  C  (x+1)   y 
-    | otherwise = (C x y)
-adjacentLocation U (C x y)
-    | (maze (C  (x)   (y+1))) == Ground  =  C  (x)   (y+1) 
-    | (maze (C  (x)   (y+1))) == Storage =  C  (x)   (y+1) 
-    | otherwise = (C x y)
-adjacentLocation L (C x y)
-    | (maze (C  (x-1)   y)) == Ground  =  C  (x-1)   y 
-    | (maze (C  (x-1)   y)) == Storage =  C  (x-1)   y 
-    | otherwise = (C x y)
-adjacentLocation D (C x y) 
-    | (maze (C  (x)   (y-1))) == Ground  =  C  (x)   (y-1) 
-    | (maze (C  (x)   (y-1))) == Storage =  C  (x)   (y-1) 
-    | otherwise = (C x y)
-
-someLocation :: Location
-someLocation = adjacentLocation U (adjacentLocation U (adjacentLocation L initialLocation))
+adjacentLocation :: Direction -> State -> State
+adjacentLocation R (Join (C x y) _) 
+    | ((maze (C  (x+1)   y)) == Ground)  =  (Join (C  (x+1)   y) R) 
+    | (maze (C  (x+1)   y)) == Storage =  (Join (C  (x+1)   y) R)
+    | otherwise = (Join (C x y) R)
+adjacentLocation U (Join (C x y) _)
+    | (maze (C  (x)   (y+1))) == Ground  =  (Join (C  (x)   (y+1) ) U)
+    | (maze (C  (x)   (y+1))) == Storage =  (Join (C  (x)   (y+1) ) U)
+    | otherwise = (Join (C x y) U)
+adjacentLocation L (Join (C x y) _)
+    | (maze (C  (x-1)   y)) == Ground  =    (Join (C  (x-1)   y ) L)
+    | (maze (C  (x-1)   y)) == Storage =    (Join (C  (x-1)   y ) L)
+    | otherwise = (Join (C x y) L)
+adjacentLocation D (Join (C x y)  _)
+    | (maze (C  (x)   (y-1))) == Ground  =  (Join (C  (x)   (y-1) ) D)
+    | (maze (C  (x)   (y-1))) == Storage =  (Join (C  (x)   (y-1) ) D)
+    | otherwise = (Join (C x y) D)
 
 -- different squares that may occur in Sokoban
 wall :: Picture
@@ -94,3 +89,8 @@ pictureOfMazeRowCol x y = translated (fromIntegral x) (fromIntegral y) (drawTile
 player :: Picture
 player = (colored green (translated 0 0.3 (solidRectangle 0.1 0.3))) & (colored pink (solidCircle 0.3))
 
+directedPlayer :: Direction -> Picture
+directedPlayer U = rotated (0.0 * pi) player
+directedPlayer L = rotated (0.5 * pi) player
+directedPlayer D = rotated (1.0 * pi) player
+directedPlayer R = rotated (1.5 * pi) player
