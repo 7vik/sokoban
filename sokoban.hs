@@ -9,6 +9,31 @@ data Tile = Wall | Ground | Storage | Box | Blank deriving Eq
 data Direction = R | U | L | D
 data Location = C Int Int
 data State = Join Location Direction
+data ListOf a = Empty | Entry a (ListOf a)
+
+someBoxLocations :: ListOf Location
+someBoxLocations = Entry (C 2 2) (Entry (C 3 3) (Entry (C (-1) 0) Empty))
+
+mapList _ Empty = Empty
+mapList f (Entry c cs) = Entry (f c) (mapList f cs)
+
+movingBoxes :: Activity (ListOf Location)
+movingBoxes = Activity someBoxLocations handle draw
+    where
+        draw = boxes
+        handle (KeyPress key) s
+            | key == "Right" = mapList (adjacentCoord R) s
+            | key == "Up"    = mapList (adjacentCoord U) s
+            | key == "Left"  = mapList (adjacentCoord L) s
+            | key == "Down"  = mapList (adjacentCoord D) s
+        handle _ s = s
+
+combine :: ListOf Picture -> Picture
+combine Empty = blank
+combine (Entry p ps) = p & combine ps
+
+pictureOfBoxes :: ListOf Location -> Picture
+pictureOfBoxes cs = combine (mapList (\c -> atLocation c (drawTile Box)) cs)
 
 main :: IO ()
 -- main = startScreenActivityOf startState handleEvent drawState

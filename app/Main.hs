@@ -5,16 +5,16 @@
 
 import CodeWorld        -- cabal install codeworld-api
 
-data Location = Loc Int Int
-data Direction = Right | Up | Left | Down
+data Location = Loc Int Int deriving Eq
+data Direction = RightDir | UpDir | LeftDir | DownDir
 data ListOf a = Empty | Entry a (ListOf a) deriving Show
 data Tile = Wall | Ground | Storage | Box | Blank deriving Eq
 data State = St Location Direction (ListOf Location)
 
 -- step - 2
 
-main :: IO ()
-main = drawingOf (pictureOfBoxes (boxesOfMaze maze))
+-- main :: IO ()
+-- main = drawingOf (pictureOfBoxes (boxesOfMaze maze))
 
 pictureOfBoxes :: (ListOf Location) -> Picture
 pictureOfBoxes Empty = blank
@@ -44,7 +44,7 @@ drawTile Box     = box
 drawTile Blank   = blank
 
 startState :: State
-startState = St (Loc 0 1) Up (boxesOfMaze maze)  -- level 1
+startState = St (Loc 0 1) UpDir (boxesOfMaze maze)  -- level 1
 -- startState = Join (C 3 4) D  -- level 2
 
 appendList :: ListOf a -> ListOf a -> ListOf a
@@ -73,3 +73,53 @@ mazeL1 (Loc x y)
     | x ==  3 && y <= 0        = Storage
     | x >= -2 && y == 0        = Box
     | otherwise                = Ground
+
+-- step 3
+
+-- main :: IO ()
+-- main = drawingOf pictureOfMaze
+
+pictureOfMaze :: Picture
+pictureOfMaze = foldl (&) blank (map pictureOfMazeRow [-10..10])
+
+pictureOfMazeRow :: Int -> Picture
+pictureOfMazeRow x = foldl (&) blank (map (pictureOfMazeRowCol x) [-10..10])
+
+pictureOfMazeRowCol :: Int -> Int -> Picture
+pictureOfMazeRowCol x y = translated (fromIntegral x) (fromIntegral y) (drawTile (noBoxMaze (Loc x y)))
+
+noBoxMaze :: Location -> Tile
+noBoxMaze c = noBox (maze c)
+    where
+        noBox :: Tile -> Tile
+        noBox Box = Ground
+        noBox t   = t
+
+mazeWithBoxes :: (ListOf Location) -> Location -> Tile
+mazeWithBoxes boxes loc 
+    | inList boxes loc  = Box
+    | otherwise         = noBoxMaze loc
+
+inList :: Eq a => ListOf a -> a -> Bool
+inList Empty _ = False
+inList (Entry a1 l1) a2 = (a1 == a2) || (inList l1 a2)
+
+-- step 4
+
+main :: IO ()
+main = drawingOf (draw startState)
+
+draw :: State -> Picture
+draw (St loc dir boxes) = (atLocation loc (directedPlayer dir)) & (pictureOfBoxes boxes) & pictureOfMaze 
+
+-- make player fancier later
+player :: Picture
+player = (colored green (translated 0 0.3 (solidRectangle 0.1 0.3))) & (colored pink (solidCircle 0.3))
+
+directedPlayer :: Direction -> Picture
+directedPlayer UpDir = rotated (0.0 * pi) player
+directedPlayer LeftDir = rotated (0.5 * pi) player
+directedPlayer DownDir = rotated (1.0 * pi) player
+directedPlayer RightDir = rotated (1.5 * pi) player
+
+-- step 5
