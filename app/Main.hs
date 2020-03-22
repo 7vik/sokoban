@@ -30,10 +30,10 @@ wall :: Picture
 wall = (colored (dark gray) (solidRectangle 1 1))
 
 ground :: Picture
-ground = (colored (yellow) (solidRectangle 1 1))
+ground = (colored (light pink) (solidRectangle 1 1))
 
 storage :: Picture
-storage = (solidCircle 0.3) & (colored (yellow) (solidRectangle 1 1))
+storage = (solidCircle 0.3) & (colored (light red) (solidRectangle 1 1))
 
 box :: Picture
 box = (colored (brown) (solidRectangle 1 1))
@@ -46,8 +46,8 @@ drawTile Box     = box
 drawTile Blank   = blank
 
 startState :: State
-startState = St (Loc 0 1) UpDir (boxesOfMaze maze)  -- level 1
--- startState = Join (Loc 3 4) D  -- level 2
+-- startState = St (Loc 0 1) UpDir (boxesOfMaze mazeL1)  -- level 1
+startState = St (Loc 3 4) DownDir (boxesOfMaze maze)  -- level 2
 
 appendList :: ListOf a -> ListOf a -> ListOf a
 appendList Empty l = l
@@ -65,7 +65,7 @@ boxesOfMazeRowCol m x y
     | otherwise             = Empty
 
 maze :: Location -> Tile
-maze = mazeL1
+maze = mazeL2
 
 mazeL1 :: Location -> Tile                  -- level 1
 mazeL1 (Loc x y)
@@ -75,6 +75,85 @@ mazeL1 (Loc x y)
     | x ==  3 && y <= 0        = Storage
     | x >= -2 && y == 0        = Box
     | otherwise                = Ground
+
+
+mazeL2 :: Location -> Tile                  -- level 2
+mazeL2 (Loc (-5) (1)) = Wall
+mazeL2 (Loc (-5) (2)) = Wall
+mazeL2 (Loc (-5) (3)) = Wall
+mazeL2 (Loc (-5) (4)) = Wall
+
+mazeL2 (Loc (-4) (-5)) = Wall
+mazeL2 (Loc (-4) (-4)) = Wall
+mazeL2 (Loc (-4) (-3)) = Wall
+mazeL2 (Loc (-4) (-2)) = Wall
+mazeL2 (Loc (-4) (-1)) = Wall
+mazeL2 (Loc (-4) (0)) = Wall
+mazeL2 (Loc (-4) (1)) = Wall
+mazeL2 (Loc (-4) (4)) = Wall
+
+mazeL2 (Loc (-3) (1)) = Box
+mazeL2 (Loc (-3) (-3)) = Box
+mazeL2 (Loc (-3) (4)) = Wall
+mazeL2 (Loc (-3) (-5)) = Wall
+
+mazeL2 (Loc (-2) (0)) = Box
+mazeL2 (Loc (-2) (-1)) = Wall
+mazeL2 (Loc (-2) (1)) = Wall
+mazeL2 (Loc (-2) (4)) = Wall
+mazeL2 (Loc (-2) (-5)) = Wall
+
+mazeL2 (Loc (-1) 0) = Storage
+mazeL2 (Loc (-1) 1) = Storage
+mazeL2 (Loc (-1) (-1)) = Storage
+mazeL2 (Loc (-1) (2)) = Box
+mazeL2 (Loc (-1) (4)) = Wall
+mazeL2 (Loc (-1) (-5)) = Wall
+mazeL2 (Loc (-1) (-4)) = Wall
+
+mazeL2 (Loc 0 0) = Storage
+mazeL2 (Loc 0 1) = Storage
+mazeL2 (Loc (0) (-3)) = Box
+mazeL2 (Loc (0) (2)) = Wall
+mazeL2 (Loc (0) (-2)) = Wall
+mazeL2 (Loc (0) (4)) = Wall
+mazeL2 (Loc (0) (-4)) = Wall
+
+mazeL2 (Loc 1  0) = Storage
+mazeL2 (Loc 1  1) = Storage
+mazeL2 (Loc (1) (5)) = Wall
+mazeL2 (Loc 1 (-1)) = Storage
+mazeL2 (Loc (1) (4)) = Wall
+mazeL2 (Loc (1) (3)) = Box
+mazeL2 (Loc (1) (-4)) = Wall
+mazeL2 (Loc (1) (2)) = Wall
+
+mazeL2 (Loc (2) (-1)) = Wall
+mazeL2 (Loc (2) (-2)) = Wall
+mazeL2 (Loc (2) (1)) = Wall
+mazeL2 (Loc (2) (5)) = Wall
+mazeL2 (Loc (2) (-4)) = Wall
+
+mazeL2 (Loc (3) (2)) = Box
+mazeL2 (Loc (3) (-2)) = Box
+mazeL2 (Loc (3) (5)) = Wall
+mazeL2 (Loc (3) (-4)) = Wall
+
+mazeL2 (Loc (4) (-4)) = Wall
+mazeL2 (Loc (4) (-1)) = Wall
+mazeL2 (Loc (4) (0)) = Wall
+mazeL2 (Loc (4) (1)) = Wall
+mazeL2 (Loc (4) (2)) = Wall
+mazeL2 (Loc (4) (3)) = Wall
+mazeL2 (Loc (4) (5)) = Wall
+mazeL2 (Loc (4) (4)) = Wall
+
+mazeL2 (Loc (5) (-1)) = Wall
+mazeL2 (Loc (5) (-2)) = Wall
+mazeL2 (Loc (5) (-3)) = Wall
+mazeL2 (Loc (5) (-4)) = Wall
+
+mazeL2 (Loc (_) (_)) = Ground
 
 -- step 3
 
@@ -116,7 +195,7 @@ draw (St loc dir boxes) = (atLocation loc (directedPlayer dir)) & (pictureOfBoxe
 
 -- make player fancier later
 player :: Picture
-player = (colored green (translated 0 0.3 (solidRectangle 0.1 0.3))) & (colored pink (solidCircle 0.3))
+player = (colored blue (translated 0 0.3 (solidRectangle 0.1 0.3))) & (colored green (solidCircle 0.3))
 
 directedPlayer :: Direction -> Picture
 directedPlayer UpDir = rotated (0.0 * pi) player
@@ -127,13 +206,14 @@ directedPlayer RightDir = rotated (1.5 * pi) player
 -- step 5
 
 handleEvent :: Event -> State -> State
-handleEvent _ (St c dir bx)
-    | gameWon bx     = (St c dir bx)
+handleEvent _ (St _ _ bx)
+    | gameWon bx     = startState 
 handleEvent (KeyPress key) s
     | key == "Right" = tryGoTo s RightDir
     | key == "Up"    = tryGoTo s UpDir
     | key == "Left"  = tryGoTo s LeftDir
     | key == "Down"  = tryGoTo s DownDir
+    | key == "R"     = startState
 handleEvent _ s      = s
 
 tryGoTo :: State -> Direction -> State
@@ -185,7 +265,10 @@ withStartScreen (Activity state0 handle draw3) = Activity state0' handle' draw'
 
 
 startScreen :: Picture
-startScreen = scaled 3 3 (lettering "Sokoban!")             -- include rules here
+startScreen = (scaled 3 3 (lettering "Sokoban!")) 
+    & translated 0 (-2) (scaled 1 1 (styledLettering Italic Handwriting "Press space to begin."))
+    & translated 0 (-3) (scaled 1 1 (styledLettering Italic Handwriting "Press R for reset."))
+    & translated 0 (-4) (scaled 1 1 (styledLettering Italic Handwriting "Press M for menu.")) 
 
 -- step 7
 
