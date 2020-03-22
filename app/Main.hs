@@ -5,8 +5,10 @@
 
 import CodeWorld        -- cabal install codeworld-api
 
+data Activity world = Activity world (Event -> world -> world) (world -> Picture)
+data StartScreenState world = StartScreen | Running world
 data Location = Loc Int Int deriving Eq
-data Direction = RightDir | UpDir | LeftDir | DownDir
+data Direction = RightDir | UpDir | LeftDir | DownDir deriving Eq
 data ListOf a = Empty | Entry a (ListOf a) deriving Show
 data Tile = Wall | Ground | Storage | Box | Blank deriving Eq
 data State = St Location Direction (ListOf Location)
@@ -45,7 +47,7 @@ drawTile Blank   = blank
 
 startState :: State
 startState = St (Loc 0 1) UpDir (boxesOfMaze maze)  -- level 1
--- startState = Join (C 3 4) D  -- level 2
+-- startState = Join (Loc 3 4) D  -- level 2
 
 appendList :: ListOf a -> ListOf a -> ListOf a
 appendList Empty l = l
@@ -106,8 +108,8 @@ inList (Entry a1 l1) a2 = (a1 == a2) || (inList l1 a2)
 
 -- step 4
 
-main :: IO ()
-main = drawingOf (draw startState)
+-- main :: IO ()
+-- main = drawingOf (draw startState)
 
 draw :: State -> Picture
 draw (St loc dir boxes) = (atLocation loc (directedPlayer dir)) & (pictureOfBoxes boxes) & pictureOfMaze 
@@ -123,3 +125,97 @@ directedPlayer DownDir = rotated (1.0 * pi) player
 directedPlayer RightDir = rotated (1.5 * pi) player
 
 -- step 5
+
+handleEvent :: Event -> State -> State
+handleEvent _ (St c dir bx)
+    | gameWon bx     = (St c dir bx)
+handleEvent (KeyPress key) s
+    | key == "Right" = tryGoTo s RightDir
+    | key == "Up"    = tryGoTo s UpDir
+    | key == "Left"  = tryGoTo s LeftDir
+    | key == "Down"  = tryGoTo s DownDir
+handleEvent _ s      = s
+
+tryGoTo :: State -> Direction -> State
+tryGoTo (St from _ bx) dir
+    = case currentMaze to of
+        Box -> case currentMaze beyond of
+            Ground -> movedState
+            Storage -> movedState
+            _ -> didn'tMove
+        Ground -> movedState
+        Storage -> movedState
+        _ -> didn'tMove
+    where 
+        currentMaze = mazeWithBoxes bx 
+        to          = adjacentLocation dir from
+        beyond      = adjacentLocation dir to
+        movedState  = St to dir movedBx
+        movedBx     = mapList (moveFromTo to beyond) bx
+        didn'tMove  = St from dir bx
+        
+-- step 6
+
+main :: IO ()
+main = runActivity (resetable (withStartScreen sokoban))
+
+sokoban :: Activity State
+sokoban = Activity startState handleEvent draw        
+        
+runActivity :: Activity s -> IO ()
+runActivity (Activity state0 handle draw1) = activityOf state0 handle draw1
+
+resetable :: Activity s -> Activity s
+resetable (Activity state0 handle draw2) = Activity state0 handle' draw2 
+    where 
+        handle' (KeyPress key) _ | key == "M" = state0
+        handle' e s = handle e s
+
+withStartScreen :: Activity s -> Activity (StartScreenState s)
+withStartScreen (Activity state0 handle draw3) = Activity state0' handle' draw'
+    where
+        state0' = StartScreen
+        handle' (KeyPress key) StartScreen
+             | key == " "                  = Running state0
+        handle' _              StartScreen = StartScreen
+        handle' e              (Running s) = Running (handle e s)
+
+        draw' StartScreen = startScreen
+        draw' (Running s) = draw3 s
+
+
+startScreen :: Picture
+startScreen = scaled 3 3 (lettering "Sokoban!")             -- include rules here
+
+-- step 7
+
+isOnStorage :: Location -> Bool
+isOnStorage c = case maze c of
+    Storage -> True
+    _       -> False
+                               
+gameWon :: ListOf Location -> Bool
+gameWon cs = allList (mapList isOnStorage cs)
+
+adjacentLocation :: Direction -> Location -> Location
+adjacentLocation RightDir (Loc x y) = Loc (x+1) y
+adjacentLocation UpDir (Loc x y) = Loc  x   (y+1)
+adjacentLocation LeftDir (Loc x y) = Loc (x-1) y
+adjacentLocation DownDir (Loc x y) = Loc  x   (y-1)
+
+moveFromTo :: Location -> Location -> Location -> Location
+moveFromTo c1 c2 c 
+    | c1 == c        = c2
+    | otherwise      = c
+
+mapList :: (a -> b) -> ListOf a -> ListOf b
+mapList _ Empty = Empty
+mapList f (Entry c cs) = Entry (f c) (mapList f cs)
+
+combine :: ListOf Picture -> Picture
+combine Empty = blank
+combine (Entry p ps) = p & combine ps
+
+allList :: ListOf Bool -> Bool
+allList Empty = True
+allList (Entry b bs) = b && allList bs
