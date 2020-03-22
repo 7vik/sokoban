@@ -90,7 +90,7 @@ startState = Join (C 3 4) D  -- level 2
 
 maze :: Location -> Tile
 maze = mazeL2
-
+f
 atLocation :: Location -> Picture -> Picture
 atLocation (C x y) pic = translated (fromIntegral x) (fromIntegral y) pic
 

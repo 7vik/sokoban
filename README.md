@@ -4,6 +4,8 @@ Sokoban (倉庫番, sōko-ban, "warehouse keeper") is a puzzle video game in whi
 
 This is an implementation of Sokoban in Haskell. 
 
+![Sokoban](https://github.com/7vik/sokoban/blob/master/screenshot.png)
+
 ## The Rules
 
 The game is played on a board of squares, where each square is a floor or a wall. Some floor squares contain boxes and some floor squares are marked as storage locations.
@@ -12,16 +14,16 @@ The player is confined to the board and may move horizontally or vertically onto
 
 ## Running the Game
 
-The code, in Haskell, has a dependancy on CodeWorld v4.0. This can be installed using:
+The code, in Haskell, uses Google's CodeWorld v4.0. This can be installed using:
 
 ```
 cabal install codeworld-api
 ```
 
-By default, running the code through:
+By default, running the code through (inside app):
 
 ```
-ghci -Wall sokoban.hs
+ghci -Wall Main.hs
 play
 ``` 
 

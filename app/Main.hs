@@ -236,8 +236,8 @@ tryGoTo (St from _ bx) dir
         
 -- step 6
 
-main :: IO ()
-main = runActivity (resetable (withStartScreen sokoban))
+play :: IO ()
+play = runActivity (resetable (withStartScreen sokoban))
 
 sokoban :: Activity State
 sokoban = Activity startState handleEvent draw        
