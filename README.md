@@ -42,12 +42,12 @@ data Tile = Wall | Ground | Storage | Box | Blank deriving Eq
 data State = St Location Direction (ListOf Location)
 ```
 
-`pictureOfBoxes`, `atLocation`, `wall`, `ground`, `storage`, `box`, `pictureOfMaze`, `pictureOfMazeRow`, `pictureOfMazeRowCol`, `noBoxMaze`, `mazeWithBoxes`, `draw`, and `drawTile` create the GUI for the game using the CodeWorld API.
+- `pictureOfBoxes`, `atLocation`, `wall`, `ground`, `storage`, `box`, `pictureOfMaze`, `pictureOfMazeRow`, `pictureOfMazeRowCol`, `noBoxMaze`, `mazeWithBoxes`, `draw`, and `drawTile` create the GUI for the game using the CodeWorld API.
 
-`startState`, `appendList`, `boxesOfMaze`, `boxesOfMazeRow`, `boxesOfMazeRowCol`, `maze`, `mazeL1` and `mazeL2` set up the internal state of the game.
+- `startState`, `appendList`, `boxesOfMaze`, `boxesOfMazeRow`, `boxesOfMazeRowCol`, `maze`, `mazeL1` and `mazeL2` set up the internal state of the game.
 
-`handleEvent`, `runActivity` and `play` comprise of the actual gameplay loop.
+- `handleEvent`, `runActivity` and `play` comprise of the actual gameplay loop.
 
-There are two levels in this game, and the level can be changed by changing [maze](https://github.com/7vik/sokoban/blob/216db2d62f3a5a041ea32785851b8c23aac0d6d6/app/Main.hs#L61) to `mazeL2` or `mazeL1`.
+- There are two levels in this game, and the level can be changed by changing [maze](https://github.com/7vik/sokoban/blob/216db2d62f3a5a041ea32785851b8c23aac0d6d6/app/Main.hs#L61) to `mazeL2` or `mazeL1`.
 
-The code uses classic functional idioms like HOFs, Polymorphism, Currying, Maps, IO and Folds but does not require use of Applicatives. 
+- The code uses classic functional idioms like HOFs, Polymorphism, Currying, Maps, IO and Folds but does not require use of Applicatives. 
