@@ -1,5 +1,3 @@
--- step - 1
-
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -12,11 +10,6 @@ data Direction = RightDir | UpDir | LeftDir | DownDir deriving Eq
 data ListOf a = Empty | Entry a (ListOf a) deriving Show
 data Tile = Wall | Ground | Storage | Box | Blank deriving Eq
 data State = St Location Direction (ListOf Location)
-
--- step - 2
-
--- main :: IO ()
--- main = drawingOf (pictureOfBoxes (boxesOfMaze maze))
 
 pictureOfBoxes :: (ListOf Location) -> Picture
 pictureOfBoxes Empty = blank
@@ -155,11 +148,6 @@ mazeL2 (Loc (5) (-4)) = Wall
 
 mazeL2 (Loc (_) (_)) = Ground
 
--- step 3
-
--- main :: IO ()
--- main = drawingOf pictureOfMaze
-
 pictureOfMaze :: Picture
 pictureOfMaze = foldl (&) blank (map pictureOfMazeRow [-10..10])
 
@@ -185,11 +173,6 @@ inList :: Eq a => ListOf a -> a -> Bool
 inList Empty _ = False
 inList (Entry a1 l1) a2 = (a1 == a2) || (inList l1 a2)
 
--- step 4
-
--- main :: IO ()
--- main = drawingOf (draw startState)
-
 draw :: State -> Picture
 draw (St loc dir boxes) = (atLocation loc (directedPlayer dir)) & (pictureOfBoxes boxes) & pictureOfMaze 
 
@@ -203,7 +186,6 @@ directedPlayer LeftDir = rotated (0.5 * pi) player
 directedPlayer DownDir = rotated (1.0 * pi) player
 directedPlayer RightDir = rotated (1.5 * pi) player
 
--- step 5
 
 handleEvent :: Event -> State -> State
 handleEvent _ (St _ _ bx)
@@ -234,8 +216,6 @@ tryGoTo (St from _ bx) dir
         movedBx     = mapList (moveFromTo to beyond) bx
         didn'tMove  = St from dir bx
         
--- step 6
-
 play :: IO ()
 play = runActivity (resetable (withStartScreen sokoban))
 
@@ -269,8 +249,6 @@ startScreen = (scaled 3 3 (lettering "Sokoban!"))
     & translated 0 (-2) (scaled 1 1 (styledLettering Italic Handwriting "Press space to begin."))
     & translated 0 (-3) (scaled 1 1 (styledLettering Italic Handwriting "Press R for reset."))
     & translated 0 (-4) (scaled 1 1 (styledLettering Italic Handwriting "Press M for menu.")) 
-
--- step 7
 
 isOnStorage :: Location -> Bool
 isOnStorage c = case maze c of
