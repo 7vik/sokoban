@@ -4,7 +4,7 @@ Sokoban (倉庫番, sōko-ban, "warehouse keeper") is a puzzle video game in whi
 
 This is an implementation of Sokoban in Haskell. 
 
-<img src="https://github.com/7vik/sokoban/blob/master/screenshot.png" width="400" height="400" align="middle">
+<img src="https://github.com/7vik/sokoban/blob/master/sokoban.gif" width="400" height="400" align="middle">
 
 ## The Rules
 
